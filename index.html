@@ -312,18 +312,27 @@ const cfg={
 };
 const app=initializeApp(cfg),auth=getAuth(app),fs=getFirestore(app),A=window.cloudApi;
 const dev=(()=>{try{let d=localStorage.getItem("hishab_dev");if(!d){d=Math.random().toString(36).slice(2)+Date.now().toString(36);localStorage.setItem("hishab_dev",d)}return d}catch(e){return "x"+Math.random()}})();
-let uid=null,unsub=null,tm=null,pend=false,ready=false;
+let uid=null,unsub=null,tm=null,pend=false,ready=false,curEmail="",createdAtVal=null;
 const st=s=>{window.cloudStatus&&window.cloudStatus(s)};
 const ref=()=>doc(fs,"users",uid);
+async function forceBlockedOut(){
+ try{await signOut(auth)}catch(e){}
+ try{localStorage.removeItem("hishab_skip")}catch(e){}
+ alert("আপনার অ্যাকাউন্টটি বন্ধ করে দেওয়া হয়েছে। বিস্তারিত জানতে অ্যাডমিনের সাথে যোগাযোগ করুন।");
+}
 async function pushNow(){
  if(!uid)return;clearTimeout(tm);pend=false;
- const p=A.pay();p.dev=dev;
- try{await setDoc(ref(),p);A.synced(p.ts);st("সিঙ্ক হয়েছে ✓")}catch(e){pend=true;st("সিঙ্ক হয়নি, ইন্টারনেট দেখুন")}
+ const p=A.pay();p.dev=dev;p.email=curEmail;p.lastSeen=Date.now();
+ if(!createdAtVal){createdAtVal=Date.now()}
+ p.createdAt=createdAtVal;
+ try{await setDoc(ref(),p,{merge:true});A.synced(p.ts);st("সিঙ্ক হয়েছে ✓")}catch(e){pend=true;st("সিঙ্ক হয়নি, ইন্টারনেট দেখুন")}
 }
 window.cloudPush=()=>{if(!uid||!ready)return;pend=true;clearTimeout(tm);tm=setTimeout(pushNow,800)};
 function onSnap(snap){
  if(snap.metadata.hasPendingWrites)return;
  const d=snap.exists()?snap.data():null;
+ if(d&&d.createdAt)createdAtVal=d.createdAt;
+ if(d&&d.blocked===true){forceBlockedOut();return}
  if(!ready){
   ready=true;
   if(!d){if(A.hasData())pushNow();else st("সিঙ্ক চালু আছে");return}
@@ -345,7 +354,7 @@ window.cloud={
 };
 onAuthStateChanged(auth,u=>{
  if(unsub){unsub();unsub=null}
- ready=false;clearTimeout(tm);uid=u?u.uid:null;
+ ready=false;clearTimeout(tm);uid=u?u.uid:null;curEmail=u?(u.email||""):"";createdAtVal=null;
  if(u)unsub=onSnapshot(ref(),onSnap,()=>st("সিঙ্ক হয়নি, ইন্টারনেট দেখুন"));
  window.authChanged&&window.authChanged(u?{email:u.email}:null);
 });
