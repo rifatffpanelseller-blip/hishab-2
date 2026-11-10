@@ -1,4 +1,13 @@
 (function(){
+  document.addEventListener('click', function(e){
+    const a = e.target.closest && e.target.closest('a[href^="intent:"]');
+    if(!a) return;
+    const h = a.getAttribute('href') || '';
+    if(h.indexOf('package=com.whatsapp') > -1){
+      const m = h.match(/intent:\/\/send\/(\d+)/);
+      if(m){ e.preventDefault(); window.location.href = 'whatsapp://send?phone=' + m[1]; }
+    }
+  }, true);
   const LN = window.Capacitor && Capacitor.Plugins && Capacitor.Plugins.LocalNotifications;
   if(!LN) return;
   const nid = s => { let h = 0; for(const c of String(s)) h = (h*31 + c.charCodeAt(0)) | 0; return Math.abs(h) % 2000000000 + 1; };
