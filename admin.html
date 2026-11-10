@@ -1,0 +1,206 @@
+<!DOCTYPE html>
+<html lang="bn">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>হিসাব প্লাস — অ্যাডমিন</title>
+<link href="https://fonts.googleapis.com/css2?family=Hind+Siliguri:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#eaf6f7;--sf:#fff;--ink:#14282e;--mu:#5d7279;--ln:#dbe4e7;--br:#0a7e8c;--ob:#fff;--rd:#b3261e;--gt:#0b7a4b;--ac:#d3eef1}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:"Hind Siliguri","Noto Sans Bengali",system-ui,sans-serif;font-size:16px;line-height:1.5}
+main{max-width:760px;margin:0 auto;padding:18px 16px 60px}
+h1{font-size:1.4rem;margin:0 0 4px}
+h2{font-size:1.1rem;margin:0}
+button,input{font:inherit;color:inherit}
+button{cursor:pointer}
+.hd{display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;gap:10px}
+.card{background:var(--sf);border:1px solid var(--ln);border-radius:14px;padding:14px;margin-bottom:10px}
+.row{display:flex;align-items:center;gap:10px;justify-content:space-between;flex-wrap:wrap}
+.row+.row{margin-top:8px}
+.mu{color:var(--mu);font-size:.88rem}
+.bd{display:inline-flex;align-items:center;gap:4px;font-size:.78rem;background:var(--ac);color:var(--br);border-radius:999px;padding:3px 10px;white-space:nowrap}
+.bd.block{background:#fbe9e7;color:var(--rd)}
+.btn{border:1px solid var(--ln);background:var(--sf);border-radius:10px;padding:8px 14px;font-size:.9rem;font-weight:600;color:var(--br)}
+.btn.p{background:var(--br);color:var(--ob);border-color:var(--br)}
+.btn.d{color:var(--rd);border-color:var(--rd)}
+.btn:disabled{opacity:.5;cursor:default}
+input.fi{width:100%;height:46px;border:1px solid var(--ln);border-radius:10px;background:var(--sf);padding:0 12px;margin-bottom:10px}
+.lk{max-width:340px;margin:20vh auto 0;text-align:center}
+.er{color:var(--rd);min-height:1.4em;font-size:.9rem}
+.list-item{display:flex;align-items:center;gap:10px;width:100%;text-align:left;background:var(--sf);border:1px solid var(--ln);border-radius:12px;padding:10px 12px;margin-bottom:8px}
+.ic{width:38px;height:38px;border-radius:50%;background:var(--ac);color:var(--br);display:grid;place-items:center;font-weight:700;flex:none}
+.gr{flex:1;min-width:0}.gr b{display:block;overflow-wrap:anywhere}
+.back{border:0;background:none;color:var(--br);font-weight:600;padding:6px 0;margin-bottom:10px}
+.ppl{border-bottom:1px solid var(--ln);padding:10px 0}
+.ppl:last-child{border:0}
+.note{background:#fff7e0;border:1px solid #f0d98c;border-radius:10px;padding:10px 12px;font-size:.85rem;color:#6b5000;margin-bottom:14px}
+code{background:var(--ac);padding:2px 6px;border-radius:6px;font-size:.85rem;word-break:break-all}
+</style>
+</head>
+<body>
+<main id="m"></main>
+<script type="module">
+import {initializeApp} from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+import {getAuth,onAuthStateChanged,signInWithEmailAndPassword,signOut,sendPasswordResetEmail} from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
+import {getFirestore,doc,getDoc,setDoc,updateDoc,deleteDoc,collection,getDocs} from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+
+const cfg={
+  apiKey: "AIzaSyAOIpPgNpncshwfkEhjzvLqadoLsv5faDI",
+  authDomain: "hishab-plus.firebaseapp.com",
+  projectId: "hishab-plus",
+  storageBucket: "hishab-plus.firebasestorage.app",
+  messagingSenderId: "953144534699",
+  appId: "1:953144534699:web:075c0d0d91cc6bac48b9ee"
+};
+const app=initializeApp(cfg),auth=getAuth(app),fs=getFirestore(app);
+const $=i=>document.getElementById(i);
+const esc=s=>String(s??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+const ini=(n,d="?")=>(n||"").trim()[0]||d;
+const NM=a=>a==="imo"?"ইমো":"হোয়াটসঅ্যাপ";
+const fmt=t=>t?new Date(t).toLocaleString("bn-BD",{day:"numeric",month:"short",year:"numeric",hour:"numeric",minute:"2-digit"}):"—";
+
+let user=null,isAdmin=false,busy=false,users=[],selUid=null,lerr="";
+
+function render(){
+ if(busy){$("m").innerHTML=`<p class="mu" style="text-align:center;margin-top:40vh">লোড হচ্ছে...</p>`;return}
+ if(!user)return loginView();
+ if(!isAdmin)return notAdminView();
+ if(selUid)return detailView();
+ return listView();
+}
+
+function loginView(){
+ $("m").innerHTML=`<div class="lk">
+  <h1>হিসাব প্লাস — অ্যাডমিন</h1>
+  <p class="mu" style="margin:4px 0 16px">অ্যাডমিন অ্যাকাউন্ট দিয়ে লগইন করুন</p>
+  <p class="er" id="er">${esc(lerr)}</p>
+  <input class="fi" id="le" type="email" placeholder="জিমেইল" autocomplete="username">
+  <input class="fi" id="lp" type="password" placeholder="পাসওয়ার্ড" autocomplete="current-password">
+  <button class="btn p" style="width:100%;height:46px" onclick="doLogin()">লগইন</button>
+ </div>`;
+}
+window.doLogin=async()=>{
+ const e=$("le").value.trim(),p=$("lp").value;
+ if(!e||!p){lerr="জিমেইল আর পাসওয়ার্ড দিন";render();return}
+ lerr="";busy=true;render();
+ try{await signInWithEmailAndPassword(auth,e,p)}
+ catch(x){lerr="লগইন ব্যর্থ: "+(x&&x.code||"");busy=false;render()}
+};
+
+function notAdminView(){
+ $("m").innerHTML=`<div class="lk" style="max-width:420px">
+  <h1>অ্যাক্সেস নেই</h1>
+  <p class="mu" style="margin:8px 0 16px">এই অ্যাকাউন্টটি এখনো অ্যাডমিন হিসেবে যুক্ত করা হয়নি। Firebase Console → Firestore → <code>admins</code> কালেকশনে নিচের UID দিয়ে একটা ডকুমেন্ট বানান (যেকোনো একটা ফিল্ড দিয়ে, যেমন <code>ok: true</code>):</p>
+  <p><code>${esc(user.uid)}</code></p>
+  <button class="btn" style="margin-top:14px" onclick="location.reload()">আবার চেষ্টা করুন</button>
+  <button class="btn" style="margin-top:8px" onclick="doLogout()">লগআউট</button>
+ </div>`;
+}
+
+window.doLogout=()=>signOut(auth);
+
+async function loadUsers(){
+ busy=true;render();
+ try{
+  const snap=await getDocs(collection(fs,"users"));
+  users=[];
+  snap.forEach(d=>users.push({uid:d.id,...d.data()}));
+  users.sort((a,b)=>(b.lastSeen||b.ts||0)-(a.lastSeen||a.ts||0));
+ }catch(e){alert("ইউজার লোড করা যায়নি: "+e.message)}
+ busy=false;render();
+}
+
+function listView(){
+ const rows=users.map(u=>`
+  <button class="list-item" onclick="openUser('${u.uid}')" style="border:1px solid var(--ln);cursor:pointer">
+   <div class="ic">${esc(ini(u.email,"?"))}</div>
+   <div class="gr">
+    <b>${esc(u.email||"(ইমেইল নেই)")}</b>
+    <span class="mu">${(u.people||[]).length} জন সেভ করা • শেষ সক্রিয় ${fmt(u.lastSeen||u.ts)}</span>
+   </div>
+   ${u.blocked?'<span class="bd block">ব্লকড</span>':""}
+  </button>`).join("")||`<p class="mu" style="text-align:center;margin-top:40px">কোনো ইউজার পাওয়া যায়নি।</p>`;
+ $("m").innerHTML=`<div class="hd">
+   <div><h1>ইউজার তালিকা</h1><p class="mu" style="margin:2px 0 0">মোট ${users.length} জন</p></div>
+   <div style="display:flex;gap:8px">
+     <button class="btn" onclick="loadUsers()">রিফ্রেশ</button>
+     <button class="btn" onclick="doLogout()">লগআউট</button>
+   </div>
+ </div>
+ ${rows}`;
+}
+
+window.openUser=uid=>{selUid=uid;render()};
+
+function detailView(){
+ const u=users.find(x=>x.uid===selUid);
+ if(!u){selUid=null;return listView()}
+ const ppl=(u.people||[]).map(p=>`
+  <div class="ppl">
+   <div class="row"><b>${esc(p.name||"(নাম নেই)")}</b><span class="bd">${NM(p.app)}</span></div>
+   <div class="mu">${esc(p.phone||"নাম্বার নেই")}${p.mine?" • আমার নাম্বার: "+esc(p.mine):""}</div>
+  </div>`).join("")||`<p class="mu">কোনো নাম্বার সেভ নেই।</p>`;
+ $("m").innerHTML=`
+ <button class="back" onclick="selUid=null;render()">&larr; তালিকায় ফিরুন</button>
+ <div class="card">
+  <h2>${esc(u.email||"(ইমেইল নেই)")}</h2>
+  <p class="mu" style="margin:4px 0 0">UID: <code>${esc(u.uid)}</code></p>
+  <div class="row" style="margin-top:10px">
+   <span class="mu">অ্যাকাউন্ট তৈরি</span><b>${fmt(u.createdAt)}</b>
+  </div>
+  <div class="row">
+   <span class="mu">শেষ সক্রিয়</span><b>${fmt(u.lastSeen||u.ts)}</b>
+  </div>
+  <div class="row">
+   <span class="mu">সেভ করা নাম্বার</span><b>${(u.people||[]).length} জন</b>
+  </div>
+  <div class="row">
+   <span class="mu">অবস্থা</span>${u.blocked?'<span class="bd block">ব্লকড</span>':'<span class="bd">সক্রিয়</span>'}
+  </div>
+ </div>
+ <div class="card" style="display:flex;gap:8px;flex-wrap:wrap">
+  <button class="btn ${u.blocked?"p":""}" onclick="toggleBlock('${u.uid}',${!u.blocked})">${u.blocked?"আনব্লক করুন":"ব্লক করুন"}</button>
+  <button class="btn" onclick="sendReset('${esc(u.email||"")}')">পাসওয়ার্ড রিসেট ইমেইল পাঠান</button>
+  <button class="btn d" onclick="delUser('${u.uid}')">ডেটা ডিলিট করুন</button>
+ </div>
+ <div class="note">নোট: "ডেটা ডিলিট" শুধু এই ইউজারের সেভ করা নাম্বার ও তথ্য মুছে দেবে। তার লগইন অ্যাকাউন্টটি (ইমেইল/পাসওয়ার্ড) মুছতে হলে Firebase Console → Authentication থেকে আলাদাভাবে মুছতে হবে, কারণ সেটা এখান থেকে করা যায় না।</div>
+ <div class="sec" style="font-weight:600;margin:10px 0 6px">সেভ করা নাম্বারসমূহ</div>
+ <div class="card">${ppl}</div>
+ `;
+}
+
+window.toggleBlock=async(uid,val)=>{
+ try{await updateDoc(doc(fs,"users",uid),{blocked:val})}catch(e){alert("ব্যর্থ: "+e.message);return}
+ const u=users.find(x=>x.uid===uid);if(u)u.blocked=val;
+ render();
+};
+
+window.sendReset=async(email)=>{
+ if(!email){alert("এই ইউজারের ইমেইল নেই");return}
+ try{await sendPasswordResetEmail(auth,email);alert("রিসেট লিংক পাঠানো হয়েছে: "+email)}
+ catch(e){alert("পাঠানো যায়নি: "+e.message)}
+};
+
+window.delUser=async(uid)=>{
+ const u=users.find(x=>x.uid===uid);
+ if(!confirm((u&&u.email||uid)+" এর সব সেভ করা তথ্য মুছে যাবে। নিশ্চিত?"))return;
+ try{await deleteDoc(doc(fs,"users",uid))}catch(e){alert("ব্যর্থ: "+e.message);return}
+ users=users.filter(x=>x.uid!==uid);selUid=null;render();
+};
+
+onAuthStateChanged(auth,async u=>{
+ busy=true;render();
+ user=u;isAdmin=false;selUid=null;
+ if(u){
+  try{
+   const a=await getDoc(doc(fs,"admins",u.uid));
+   isAdmin=a.exists();
+  }catch(e){isAdmin=false}
+  if(isAdmin){busy=false;await loadUsers();return}
+ }
+ busy=false;render();
+});
+</script>
+</body>
+</html>
