@@ -61,6 +61,7 @@ nav .on{color:var(--br);font-weight:600}
 .ovl{position:fixed;inset:0;background:rgba(0,0,0,.6);display:grid;place-items:center;z-index:9;padding:20px}
 .ovl>div{background:var(--sf);border-radius:20px;padding:22px;max-width:360px;width:100%;text-align:center;max-height:80vh;overflow:auto}
 .ri{width:100%;height:48px;border:1px solid var(--ln);border-radius:12px;background:var(--sf);padding:0 14px}
+.li{width:100%;height:52px;border:1px solid var(--ln);border-radius:12px;background:var(--sf);padding:0 14px;margin-bottom:10px;font-size:1rem!important;letter-spacing:0!important;text-align:left!important}
 </style>
 </head>
 <body>
@@ -70,7 +71,10 @@ nav .on{color:var(--br);font-weight:600}
 const K="hishab_v2";
 let db={me:{name:"",phone:"",pin:"",dark:null},people:[]},v="home",cid=null,from="home",q="",ok=false,edit=null,show=false,step=1,draft={};
 try{const s=JSON.parse(localStorage.getItem(K));if(s&&Array.isArray(s.people))db=s;db.me=Object.assign({name:"",phone:"",pin:"",dark:null},db.me)}catch(e){}
-const save=()=>{try{localStorage.setItem(K,JSON.stringify(db))}catch(e){}};
+const saveLocal=()=>{try{localStorage.setItem(K,JSON.stringify(db))}catch(e){}};
+const save=()=>{db.ts=Date.now();saveLocal();if(window.cloudPush)window.cloudPush()};
+if(!db.ts)db.ts=(db.people.length||db.me.name)?Date.now():0;
+db.syncTs=db.syncTs||0;
 const $=i=>document.getElementById(i),bn=n=>Number(n).toLocaleString("bn-BD");
 const esc=s=>String(s??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
 const uid=()=>Date.now().toString(36)+Math.random().toString(36).slice(2,6);
@@ -87,6 +91,7 @@ function go(x,i){if(x==="person"){from=v==="saved"?"saved":"home";cid=i;show=fal
 function render(){
  document.documentElement.classList.toggle("dk",db.me.dark??matchMedia("(prefers-color-scheme:dark)").matches);
  if(db.me.pin&&!ok)return lock();
+ if(needLogin&&user===null)return loginView();
  $("m").innerHTML=({home,add,saved,acct,person})[v]();
  const t=v==="person"?from:v;
  $("nv").hidden=false;
@@ -141,7 +146,7 @@ function person(){
  const d=p.phone.replace(/\D/g,"").replace(/^0/,"880");
  const ia=pk=>`intent://send?phone=${d}#Intent;scheme=whatsapp;package=${pk};S.browser_fallback_url=${encodeURIComponent("https://wa.me/"+d)};end`;
  const mi="intent:#Intent;package=com.imo.android.imoim;action=android.intent.action.MAIN;category=android.intent.category.LAUNCHER;S.browser_fallback_url="+encodeURIComponent("https://imo.im")+";end";
- const ap=d?`<a class="apb" href="${ia("com.whatsapp")}" onclick="return op('com.whatsapp','whatsapp://send?phone=${d}')" aria-label="হোয়াটসঅ্যাপ">${lg("whatsapp",36)}</a><a class="apb" href="${ia("com.whatsapp.w4b")}" onclick="return op('com.whatsapp.w4b','whatsapp://send?phone=${d}')" aria-label="হোয়াটসঅ্যাপ বিজনেস">${lg("biz",36)}</a><a class="apb" href="${mi}" onclick="return op('com.imo.android.imoim','')" aria-label="ইমো">${lg("imo",36)}</a>`:"";
+ const ap=d?`<a class="apb" href="${ia("com.whatsapp")}" onclick="return op('com.whatsapp','whatsapp://send?phone=${d}')" aria-label="হোয়াটসঅ্যাপ">${lg("whatsapp",36)}</a><a class="apb" href="${ia("com.whatsapp.w4b")}" onclick="return op('com.whatsapp.w4b','whatsapp://send?phone=${d}')" aria-label="হোয়াটসঅ্যাপ বিজনেস">${lg("biz",36)}</a><a class="apb" href="${mi}" onclick="return op('com.imo.android.imoim','','${(p.phone||"").replace(/\D/g,"")}')" aria-label="ইমো">${lg("imo",36)}</a>`:"";
  return `<div class="top"><button class="bk" onclick="go('${from}')" aria-label="ফিরে যান">${ic("back")}</button><h1>${esc(p.mine||p.name)}</h1></div>
  <div class="pan"><div class="set">${ic("me",20)}<div class="gr"><span>নাম</span><b>${esc(p.name)}</b></div><button class="mini" onclick="cp(this,'name')">কপি</button></div>
  <div class="set">${ic("call",20)}<div class="gr"><span>নাম্বার • ${p.app==="imo"?"ইমো":"হোয়াটসঅ্যাপ"}</span><b><a href="tel:${esc(p.phone)}">${esc(p.phone)||"নেই"}</a></b></div><div style="display:flex;gap:6px">${ap}</div></div>
@@ -155,6 +160,7 @@ function acct(){
  <div class="fl"><label for="mn">আপনার নাম</label><input id="mn" value="${esc(db.me.name)}" autocomplete="off"></div>
  <div class="fl"><label for="mp">মোবাইল নাম্বার</label><input id="mp" type="tel" inputmode="tel" value="${esc(db.me.phone)}"></div>
  <button class="sv" onclick="saveMe()">সেভ করুন</button>
+ ${cloudBox()}
  <div class="sec">সেটিংস</div>
  <div class="pan"><div class="set"><div class="gr"><b>ডার্ক থিম</b></div><button class="tg ${isDark()?"on":""}" role="switch" aria-checked="${isDark()}" aria-label="ডার্ক থিম" onclick="db.me.dark=!isDark();save();render()"><i></i></button></div>
  <div class="set"><div class="gr"><b>পিন লক</b><span>${db.me.pin?"চালু আছে":"বন্ধ আছে"}</span></div>${db.me.pin?`<button class="mini" onclick="offPin()">বন্ধ করুন</button>`:`<input id="pn" type="password" inputmode="numeric" maxlength="4" placeholder="৪ সংখ্যা" aria-label="নতুন পিন" style="width:90px;height:40px;border:1px solid var(--ln);border-radius:10px;background:var(--sf);padding:0 10px"><button class="mini" onclick="setPin()">চালু করুন</button>`}</div></div>
@@ -209,14 +215,17 @@ function stopAlarm(){
  try{clearInterval(vi);vi=null;navigator.vibrate&&navigator.vibrate(0)}catch(e){}
  try{mg&&mg.disconnect();mg=null}catch(e){}
 }
-function op(pk,u){try{if(window.AndroidApp&&AndroidApp.open(pk,u||""))return false}catch(e){}return true}
+function cpFb(t){const a=document.createElement("textarea");a.value=t;a.style.cssText="position:fixed;opacity:0";document.body.appendChild(a);a.select();try{document.execCommand("copy")}catch(e){}a.remove()}
+function copyTxt(t){try{if(navigator.clipboard&&navigator.clipboard.writeText){navigator.clipboard.writeText(t).catch(()=>cpFb(t));return}}catch(e){}cpFb(t)}
+function toast(m){let t=$("toast");if(!t){t=document.createElement("div");t.id="toast";t.style.cssText="position:fixed;left:50%;bottom:90px;transform:translateX(-50%);background:var(--ink);color:var(--bg);padding:10px 16px;border-radius:12px;z-index:20;font-size:.9rem;max-width:90%;text-align:center";document.body.appendChild(t)}t.textContent=m;t.style.display="block";clearTimeout(t._h);t._h=setTimeout(()=>{t.style.display="none"},2500)}
+function op(pk,u,n){if(n){copyTxt(n);toast("নাম্বার কপি হয়েছে, ইমোর সার্চে পেস্ট করুন")}try{if(window.AndroidApp&&AndroidApp.open(pk,u||""))return false}catch(e){}return true}
 function appLinks(p){
  const d=(p.phone||"").replace(/\D/g,"").replace(/^0/,"880");
  if(!d)return `<p style="color:var(--mu)">নাম্বার দেওয়া নেই</p>`;
  const ia=pk=>`intent://send?phone=${d}#Intent;scheme=whatsapp;package=${pk};S.browser_fallback_url=${encodeURIComponent("https://wa.me/"+d)};end`;
  const mi="intent:#Intent;package=com.imo.android.imoim;action=android.intent.action.MAIN;category=android.intent.category.LAUNCHER;S.browser_fallback_url="+encodeURIComponent("https://imo.im")+";end";
  const b=(h,l,t,o)=>`<a class="sv o" href="${h}" onclick="${o}" style="margin:8px 0;width:100%;display:flex;align-items:center;justify-content:center;gap:10px;text-decoration:none">${lg(l,26)}${t}</a>`;
- return b(ia("com.whatsapp"),"whatsapp","হোয়াটসঅ্যাপ ওপেন",`return op('com.whatsapp','whatsapp://send?phone=${d}')`)+b(ia("com.whatsapp.w4b"),"biz","হোয়াটসঅ্যাপ বিজনেস ওপেন",`return op('com.whatsapp.w4b','whatsapp://send?phone=${d}')`)+b(mi,"imo","ইমো ওপেন",`return op('com.imo.android.imoim','')`);
+ return b(ia("com.whatsapp"),"whatsapp","হোয়াটসঅ্যাপ ওপেন",`return op('com.whatsapp','whatsapp://send?phone=${d}')`)+b(ia("com.whatsapp.w4b"),"biz","হোয়াটসঅ্যাপ বিজনেস ওপেন",`return op('com.whatsapp.w4b','whatsapp://send?phone=${d}')`)+b(mi,"imo","ইমো ওপেন",`return op('com.imo.android.imoim','','${(p.phone||"").replace(/\D/g,"")}')`);
 }
 function dueOk(){
  stopAlarm();
@@ -238,12 +247,108 @@ function chk(){
 }
 setInterval(chk,10000);
 addEventListener("visibilitychange",()=>{if(!document.hidden)chk()});
+let user=undefined,needLogin=false,cstat="",lerr="",lbusy=false;
+const skipped=()=>{try{return !!localStorage.getItem("hishab_skip")}catch(e){return false}};
+const soft=()=>{const a=document.activeElement;if(a&&/INPUT|TEXTAREA/.test(a.tagName))return;if(needLogin&&user===null)return;render()};
+window.cloudApi={
+ pay(){return JSON.parse(JSON.stringify({people:db.people,meName:db.me.name||"",mePhone:db.me.phone||"",ts:db.ts||0}))},
+ apply(d){db.people=Array.isArray(d.people)?d.people:[];db.me.name=d.meName||"";db.me.phone=d.mePhone||"";db.ts=d.ts||0;db.syncTs=db.ts;saveLocal();soft()},
+ synced(ts){db.syncTs=ts;saveLocal()},
+ hasData(){return db.people.length>0||!!db.me.name},
+ localChanged(){return (db.ts||0)>(db.syncTs||0)},
+ syncTs(){return db.syncTs||0}
+};
+window.cloudStatus=s=>{cstat=s;const e=$("cs");if(e)e.textContent=s};
+window.authChanged=u=>{user=u;needLogin=!u&&!skipped();lerr="";if(u){try{localStorage.removeItem("hishab_skip")}catch(e){}}cstat="";render()};
+const fbErr=c=>({"auth/invalid-email":"জিমেইল ঠিকানাটা ঠিক নেই","auth/missing-password":"পাসওয়ার্ড দিন","auth/user-not-found":"এই জিমেইলে অ্যাকাউন্ট নেই","auth/wrong-password":"পাসওয়ার্ড ভুল","auth/invalid-credential":"জিমেইল বা পাসওয়ার্ড ভুল","auth/email-already-in-use":"এই জিমেইলে আগেই অ্যাকাউন্ট আছে, লগইন করুন","auth/weak-password":"পাসওয়ার্ড কমপক্ষে ৬ অক্ষরের দিন","auth/network-request-failed":"ইন্টারনেট নেই","auth/too-many-requests":"অনেকবার চেষ্টা হয়েছে, কিছুক্ষণ পরে আবার চেষ্টা করুন"}[c]||"কিছু একটা ভুল হয়েছে ("+c+")");
+function loginView(){
+ $("nv").hidden=true;
+ $("m").innerHTML=`<div class="lk" style="margin-top:6vh"><img src="icon-192.png" alt="" style="width:96px;height:96px;border-radius:24px"><h1 style="margin:10px 0 4px">হিসাব প্লাস</h1><p style="color:var(--mu);margin:0 0 14px">আপনার সব হিসাব, এক জায়গায়!</p><p class="er" id="er">${esc(lerr)}</p><input class="li" id="le" type="email" inputmode="email" autocomplete="username" placeholder="জিমেইল ঠিকানা" aria-label="জিমেইল"><input class="li" id="lw" type="password" autocomplete="current-password" placeholder="পাসওয়ার্ড (কমপক্ষে ৬ অক্ষর)" aria-label="পাসওয়ার্ড"><button class="sv" style="margin:6px 0;width:100%" onclick="doLogin(false)">লগইন</button><button class="sv o" style="margin:6px 0;width:100%" onclick="doLogin(true)">নতুন অ্যাকাউন্ট খুলুন</button><div style="display:flex;gap:8px;justify-content:center;margin-top:10px;flex-wrap:wrap"><button class="mini" onclick="doReset()">পাসওয়ার্ড ভুলে গেছি</button><button class="mini" onclick="skipLogin()">এখন না, পরে করব</button></div></div>`;
+}
+async function doLogin(isNew){
+ if(lbusy)return;const e=$("le").value.trim(),p=$("lw").value;
+ if(!e||!p){$("er").textContent="জিমেইল আর পাসওয়ার্ড দিন";return}
+ if(!window.cloud){$("er").textContent="ইন্টারনেট চালু করে আবার চেষ্টা করুন";return}
+ lbusy=true;$("er").textContent="অপেক্ষা করুন...";
+ try{await (isNew?window.cloud.signup(e,p):window.cloud.login(e,p))}catch(x){const r=$("er");if(r)r.textContent=fbErr(x&&x.code)}
+ lbusy=false;
+}
+async function doReset(){
+ const e=$("le").value.trim();if(!e){$("er").textContent="আগে জিমেইল ঠিকানা লিখুন";return}
+ if(!window.cloud){$("er").textContent="ইন্টারনেট চালু করে আবার চেষ্টা করুন";return}
+ try{await window.cloud.reset(e);$("er").textContent="পাসওয়ার্ড বদলের লিংক জিমেইলে পাঠানো হয়েছে (স্প্যাম ফোল্ডারও দেখুন)"}catch(x){$("er").textContent=fbErr(x&&x.code)}
+}
+function skipLogin(){try{localStorage.setItem("hishab_skip","1")}catch(e){}needLogin=false;render()}
+function syncNow(){if(window.cloud){cstat="সিঙ্ক হচ্ছে...";window.cloud.push();render()}}
+async function doLogout(){
+ if(!confirm("লগআউট করলে এই ফোন থেকে সব নাম্বার মুছে যাবে (ক্লাউডে থাকবে, আবার লগইন করলে ফিরে আসবে)। নিশ্চিত?"))return;
+ try{await window.cloud.out()}catch(e){return}
+ db.people=[];db.me.name="";db.me.phone="";db.ts=0;db.syncTs=0;saveLocal();v="home";render();
+}
+function cloudBox(){
+ const h=`<div class="sec">ক্লাউড অ্যাকাউন্ট</div>`;
+ if(!window.cloud)return h+`<div class="pan"><div class="set"><div class="gr"><b>সিঙ্ক এখন বন্ধ</b><span>ইন্টারনেট থাকলে চালু হবে</span></div></div></div>`;
+ if(user)return h+`<div class="pan"><div class="set"><div class="gr"><b>${esc(user.email)}</b><span id="cs">${esc(cstat||"সিঙ্ক চালু আছে")}</span></div><button class="mini" onclick="syncNow()">সিঙ্ক</button><button class="mini" onclick="doLogout()">লগআউট</button></div></div>`;
+ return h+`<div class="pan"><div class="set"><div class="gr"><b>লগইন করা নেই</b><span>লগইন করলে সব ফোনে নাম্বার পাবেন</span></div><button class="mini" onclick="needLogin=true;render()">লগইন</button></div></div>`;
+}
 let inst=null;
 addEventListener("beforeinstallprompt",e=>{e.preventDefault();inst=e;if(v==="acct")render()});
 addEventListener("appinstalled",()=>{inst=null;if(v==="acct")render()});
 function doInstall(){if(!inst)return;inst.prompt();inst.userChoice.then(()=>{inst=null;render()})}
 if("serviceWorker"in navigator)addEventListener("load",()=>navigator.serviceWorker.register("sw.js").catch(()=>{}));
 render();chk();
+</script>
+<script type="module">
+import {initializeApp} from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+import {getAuth,onAuthStateChanged,signInWithEmailAndPassword,createUserWithEmailAndPassword,signOut,sendPasswordResetEmail} from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
+import {getFirestore,doc,setDoc,onSnapshot} from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+const cfg={
+  apiKey: "AIzaSyAOIpPgNpncshwfkEhjzvLqadoLsv5faDI",
+  authDomain: "hishab-plus.firebaseapp.com",
+  projectId: "hishab-plus",
+  storageBucket: "hishab-plus.firebasestorage.app",
+  messagingSenderId: "953144534699",
+  appId: "1:953144534699:web:075c0d0d91cc6bac48b9ee"
+};
+const app=initializeApp(cfg),auth=getAuth(app),fs=getFirestore(app),A=window.cloudApi;
+const dev=(()=>{try{let d=localStorage.getItem("hishab_dev");if(!d){d=Math.random().toString(36).slice(2)+Date.now().toString(36);localStorage.setItem("hishab_dev",d)}return d}catch(e){return "x"+Math.random()}})();
+let uid=null,unsub=null,tm=null,pend=false,ready=false;
+const st=s=>{window.cloudStatus&&window.cloudStatus(s)};
+const ref=()=>doc(fs,"users",uid);
+async function pushNow(){
+ if(!uid)return;clearTimeout(tm);pend=false;
+ const p=A.pay();p.dev=dev;
+ try{await setDoc(ref(),p);A.synced(p.ts);st("সিঙ্ক হয়েছে ✓")}catch(e){pend=true;st("সিঙ্ক হয়নি, ইন্টারনেট দেখুন")}
+}
+window.cloudPush=()=>{if(!uid||!ready)return;pend=true;clearTimeout(tm);tm=setTimeout(pushNow,800)};
+function onSnap(snap){
+ if(snap.metadata.hasPendingWrites)return;
+ const d=snap.exists()?snap.data():null;
+ if(!ready){
+  ready=true;
+  if(!d){if(A.hasData())pushNow();else st("সিঙ্ক চালু আছে");return}
+  const lc=A.localChanged(),cc=d.ts!==A.syncTs();
+  if(!cc){if(lc)pushNow();else st("সিঙ্ক হয়েছে ✓");return}
+  if(!lc||!A.hasData()){A.apply(d);st("সিঙ্ক হয়েছে ✓");return}
+  if(confirm("এই অ্যাকাউন্টে আগে থেকেই তথ্য আছে।\nঠিক আছে = ক্লাউডের তথ্য এই ফোনে আসবে (ফোনের তথ্য বদলে যাবে)\nবাতিল = এই ফোনের তথ্য ক্লাউডে যাবে (ক্লাউডের তথ্য বদলে যাবে)")){A.apply(d);st("সিঙ্ক হয়েছে ✓")}else{pushNow()}
+  return;
+ }
+ if(d&&d.dev!==dev&&d.ts!==A.syncTs()){A.apply(d);st("নতুন তথ্য এসেছে ✓")}
+}
+window.cloud={
+ ok:true,
+ login:(e,p)=>signInWithEmailAndPassword(auth,e,p),
+ signup:(e,p)=>createUserWithEmailAndPassword(auth,e,p),
+ reset:e=>sendPasswordResetEmail(auth,e),
+ out:async()=>{if(pend&&uid)await pushNow();await signOut(auth)},
+ push:()=>pushNow()
+};
+onAuthStateChanged(auth,u=>{
+ if(unsub){unsub();unsub=null}
+ ready=false;clearTimeout(tm);uid=u?u.uid:null;
+ if(u)unsub=onSnapshot(ref(),onSnap,()=>st("সিঙ্ক হয়নি, ইন্টারনেট দেখুন"));
+ window.authChanged&&window.authChanged(u?{email:u.email}:null);
+});
 </script>
 </body>
 </html>
