@@ -139,7 +139,7 @@ function cp(b,k){navigator.clipboard&&navigator.clipboard.writeText(cur()[k]||""
 function person(){
  const p=cur();if(!p){v="home";return home()}
  const d=p.phone.replace(/\D/g,"").replace(/^0/,"88");
- const ia=pk=>`intent://send/${d}#Intent;scheme=smsto;package=${pk};action=android.intent.action.SENDTO;S.browser_fallback_url=${encodeURIComponent("https://wa.me/"+d)};end`;
+ const ia=pk=>`intent://send?phone=${d}#Intent;scheme=whatsapp;package=${pk};S.browser_fallback_url=${encodeURIComponent("https://wa.me/"+d)};end`;
  const mi="intent:#Intent;package=com.imo.android.imoim;action=android.intent.action.MAIN;category=android.intent.category.LAUNCHER;S.browser_fallback_url="+encodeURIComponent("https://imo.im")+";end";
  const ap=d?`<a class="apb" href="${ia("com.whatsapp")}" aria-label="হোয়াটসঅ্যাপ">${lg("whatsapp",36)}</a><a class="apb" href="${ia("com.whatsapp.w4b")}" aria-label="হোয়াটসঅ্যাপ বিজনেস">${lg("biz",36)}</a><a class="apb" href="${mi}" aria-label="ইমো">${lg("imo",36)}</a>`:"";
  return `<div class="top"><button class="bk" onclick="go('${from}')" aria-label="ফিরে যান">${ic("back")}</button><h1>${esc(p.mine||p.name)}</h1></div>
@@ -212,7 +212,7 @@ function stopAlarm(){
 function appLinks(p){
  const d=(p.phone||"").replace(/\D/g,"").replace(/^0/,"88");
  if(!d)return `<p style="color:var(--mu)">নাম্বার দেওয়া নেই</p>`;
- const ia=pk=>`intent://send/${d}#Intent;scheme=smsto;package=${pk};action=android.intent.action.SENDTO;S.browser_fallback_url=${encodeURIComponent("https://wa.me/"+d)};end`;
+ const ia=pk=>`intent://send?phone=${d}#Intent;scheme=whatsapp;package=${pk};S.browser_fallback_url=${encodeURIComponent("https://wa.me/"+d)};end`;
  const mi="intent:#Intent;package=com.imo.android.imoim;action=android.intent.action.MAIN;category=android.intent.category.LAUNCHER;S.browser_fallback_url="+encodeURIComponent("https://imo.im")+";end";
  const b=(h,l,t)=>`<a class="sv o" href="${h}" style="margin:8px 0;width:100%;display:flex;align-items:center;justify-content:center;gap:10px;text-decoration:none">${lg(l,26)}${t}</a>`;
  return b(ia("com.whatsapp"),"whatsapp","হোয়াটসঅ্যাপ ওপেন")+b(ia("com.whatsapp.w4b"),"biz","হোয়াটসঅ্যাপ বিজনেস ওপেন")+b(mi,"imo","ইমো ওপেন");
