@@ -1,0 +1,227 @@
+<!DOCTYPE html>
+<html lang="bn">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#0a7e8c">
+<title>হিসাব প্লাস</title>
+<link rel="manifest" href="manifest.json">
+<link rel="icon" href="icon-192.png">
+<link rel="apple-touch-icon" href="icon-192.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="হিসাব প্লাস">
+<link href="https://fonts.googleapis.com/css2?family=Hind+Siliguri:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#eaf6f7;--sf:#fff;--ink:#14282e;--mu:#5d7279;--ln:#dbe4e7;--br:#0a7e8c;--ob:#fff;--gt:#0b7a4b;--rd:#b3261e;--gb:#e3f4ec;--rb:#fbe9e7;--ac:#d3eef1;color-scheme:light}
+:root.dk{--bg:#0f1f22;--sf:#16262c;--ink:#e6f0f2;--mu:#8fa5ac;--ln:#2a3e45;--br:#5fd3e0;--ob:#06262a;--gt:#4cc795;--rd:#ff8a80;--gb:#12342a;--rb:#3b1f1d;--ac:#17373c;color-scheme:dark}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:"Hind Siliguri","Noto Sans Bengali",system-ui,sans-serif;font-size:17px;line-height:1.45}
+main{max-width:560px;margin:0 auto;padding:calc(12px + env(safe-area-inset-top,0px)) 0 120px}
+button,input,textarea{font:inherit;color:inherit}
+button{cursor:pointer}
+:focus-visible{outline:2px solid var(--br);outline-offset:2px}
+.hd,.top{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:14px 20px 8px}
+.top{justify-content:flex-start}
+h1{margin:0;font-size:1.6rem;font-weight:700}
+.av,.bk{width:44px;height:44px;border-radius:50%;border:0;display:grid;place-items:center;flex:none}
+.av{background:var(--br);color:var(--ob);font-weight:700}
+.bk{background:var(--sf);border:1px solid var(--ln)}
+.sr{margin:6px 20px 10px;display:flex;align-items:center;gap:10px;background:var(--sf);border:1px solid var(--ln);border-radius:14px;padding:0 14px;color:var(--mu)}
+.sr input{flex:1;border:0;background:none;height:48px;outline:0;color:var(--ink)}
+.ls{padding:0 20px}
+.row{display:flex;align-items:center;gap:12px;width:100%;text-align:left;background:var(--sf);border:1px solid var(--ln);border-radius:16px;padding:12px 14px;margin-bottom:8px}
+.ic{width:42px;height:42px;border-radius:50%;background:var(--ac);color:var(--br);display:grid;place-items:center;font-weight:700;flex:none}
+.gr{flex:1;min-width:0}.gr b{display:block;overflow-wrap:anywhere}.gr span{font-size:.85rem;color:var(--mu)}
+.bd{display:inline-flex;align-items:center;gap:6px;font-size:.8rem;background:var(--ac);color:var(--br);border-radius:999px;padding:3px 10px;white-space:nowrap}
+.empty{text-align:center;color:var(--mu);padding:30px 16px}
+.sec{margin:16px 20px 6px;font-weight:600;color:var(--mu)}
+.pan{margin:0 20px 12px;background:var(--sf);border:1px solid var(--ln);border-radius:16px;padding:2px 14px}
+.set{display:flex;align-items:center;gap:12px;padding:12px 0;border-bottom:1px solid var(--ln)}
+.set:last-child{border:0}
+.set a{color:var(--br);text-decoration:none;font-weight:600}
+.mini{border:1px solid var(--ln);background:none;border-radius:10px;padding:6px 12px;color:var(--br);font-size:.9rem;text-decoration:none;font-weight:600}
+.fl{margin:0 20px 12px}.fl label{display:block;font-size:.88rem;color:var(--mu);margin-bottom:4px}
+.fl input,textarea{width:100%;height:48px;border:1px solid var(--ln);border-radius:12px;background:var(--sf);padding:0 14px}
+textarea{height:90px;padding:10px;margin-bottom:8px}
+.seg{display:flex;gap:8px}.seg button{flex:1;display:flex;align-items:center;justify-content:center;gap:8px;height:48px;border-radius:12px;border:1px solid var(--ln);background:var(--sf)}
+.apb{width:40px;height:40px;display:grid;place-items:center;border-radius:50%}.ck{font-weight:700}.seg .on{background:var(--br);color:var(--ob);border-color:var(--br);font-weight:600}
+.sv{display:block;margin:8px 20px;height:52px;width:calc(100% - 40px);border:0;border-radius:14px;background:var(--br);color:var(--ob);font-weight:600}
+.sv.o{background:none;border:1px solid var(--ln);color:var(--br)}.sv.d{background:none;border:1px solid var(--ln);color:var(--rd)}
+.big{width:88px;height:88px;border-radius:50%;background:var(--br);color:var(--ob);font-size:2.2rem;font-weight:700;display:grid;place-items:center;margin:8px auto 14px}
+.tg{width:48px;height:28px;border-radius:14px;border:0;background:var(--ln);position:relative;flex:none}
+.tg i{position:absolute;left:3px;top:3px;width:22px;height:22px;border-radius:50%;background:#fff;transition:left .15s}
+.tg.on{background:var(--br)}.tg.on i{left:23px}
+nav{position:fixed;left:0;right:0;bottom:0;background:var(--sf);border-top:1px solid var(--ln);display:flex;padding-bottom:env(safe-area-inset-bottom,0px)}
+nav[hidden]{display:none}
+nav button{flex:1;border:0;background:none;color:var(--mu);font-size:.75rem;display:flex;flex-direction:column;align-items:center;gap:2px;padding:10px 2px}
+nav .on{color:var(--br);font-weight:600}
+.lk{max-width:340px;margin:25vh auto 0;padding:0 20px;text-align:center}.lk input{text-align:center;font-size:1.5rem;letter-spacing:.4em}
+.er{color:var(--rd);min-height:1.5em}
+.ovl{position:fixed;inset:0;background:rgba(0,0,0,.6);display:grid;place-items:center;z-index:9;padding:20px}
+.ovl>div{background:var(--sf);border-radius:20px;padding:22px;max-width:360px;width:100%;text-align:center;max-height:80vh;overflow:auto}
+.ri{width:100%;height:48px;border:1px solid var(--ln);border-radius:12px;background:var(--sf);padding:0 14px}
+</style>
+</head>
+<body>
+<main id="m"></main>
+<nav id="nv"></nav>
+<script>
+const K="hishab_v2";
+let db={me:{name:"",phone:"",pin:"",dark:null},people:[]},v="home",cid=null,from="home",q="",ok=false,edit=null,show=false,step=1,draft={};
+try{const s=JSON.parse(localStorage.getItem(K));if(s&&Array.isArray(s.people))db=s;db.me=Object.assign({name:"",phone:"",pin:"",dark:null},db.me)}catch(e){}
+const save=()=>{try{localStorage.setItem(K,JSON.stringify(db))}catch(e){}};
+const $=i=>document.getElementById(i),bn=n=>Number(n).toLocaleString("bn-BD");
+const esc=s=>String(s??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+const uid=()=>Date.now().toString(36)+Math.random().toString(36).slice(2,6);
+const hp=s=>{let h=5381;for(const c of s)h=((h*33)^c.charCodeAt(0))>>>0;return String(h)};
+const ini=(n,d="?")=>(n||"").trim()[0]||d;
+const cur=()=>db.people.find(p=>p.id===cid);
+const P={home:"M4 11l8-7 8 7v9h-5v-6H9v6H4z",add:"M12 5v14M5 12h14",eye:"M2 12s4-7 10-7 10 7 10 7-4 7-10 7S2 12 2 12zM12 9a3 3 0 1 0 0 6 3 3 0 0 0 0-6z",me:"M12 11a4 4 0 1 0 0-8 4 4 0 0 0 0 8zM4 21c0-4 4-6 8-6s8 2 8 6",search:"M11 5a6 6 0 1 0 0 12 6 6 0 0 0 0-12zM20 20l-4-4",back:"M15 5l-7 7 7 7",call:"M5 4h4l2 5-2.5 1.5a11 11 0 0 0 5 5L15 13l5 2v4a2 2 0 0 1-2 2A16 16 0 0 1 3 6a2 2 0 0 1 2-2z",key:"M14 10a4 4 0 1 0-3.5 4H12l2 2h2v2h2v-3l-4.6-4.6M7 10h.01"};
+const ic=(n,s=22)=>`<svg width="${s}" height="${s}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="${P[n]}"/></svg>`;
+const LG={whatsapp:'<circle cx="12" cy="12" r="12" fill="#25D366"/><path d="M12 5.5a6.5 6.5 0 0 0-5.6 9.8l-.9 3.2 3.3-.9A6.5 6.5 0 1 0 12 5.5z" fill="none" stroke="#fff" stroke-width="1.6" stroke-linejoin="round"/><path d="M9.6 9.4c.2 2.2 2.3 4.2 4.6 4.7l.9-1.1-1.4-.7-.6.5c-.8-.3-1.6-1.1-1.9-1.9l.5-.6-.7-1.4z" fill="#fff"/>',biz:'<circle cx="12" cy="12" r="12" fill="#128C7E"/><path d="M12 5.5a6.5 6.5 0 0 0-5.6 9.8l-.9 3.2 3.3-.9A6.5 6.5 0 1 0 12 5.5z" fill="none" stroke="#fff" stroke-width="1.6" stroke-linejoin="round"/><text x="12" y="15" text-anchor="middle" font-size="8.5" font-weight="700" fill="#fff" font-family="Arial,sans-serif">B</text>',imo:'<circle cx="12" cy="12" r="12" fill="#1c8ce0"/><text x="12" y="15.4" text-anchor="middle" font-size="8.6" font-weight="700" fill="#fff" font-family="Arial,sans-serif">imo</text>'};
+const lg=(a,z=22)=>`<svg width="${z}" height="${z}" viewBox="0 0 24 24" aria-hidden="true">${LG[a==="imo"?"imo":a==="biz"?"biz":"whatsapp"]}</svg>`;
+const isDark=()=>document.documentElement.classList.contains("dk");
+
+function go(x,i){if(x==="person"){from=v==="saved"?"saved":"home";cid=i;show=false}else if(x==="add"){edit=null;step=1;draft={}}v=x;q="";render();scrollTo(0,0)}
+function render(){
+ document.documentElement.classList.toggle("dk",db.me.dark??matchMedia("(prefers-color-scheme:dark)").matches);
+ if(db.me.pin&&!ok)return lock();
+ $("m").innerHTML=({home,add,saved,acct,person})[v]();
+ const t=v==="person"?from:v;
+ $("nv").hidden=false;
+ $("nv").innerHTML=[["home","হোম","home"],["add","নাম্বার যোগ","add"],["saved","সেভ করা","eye"],["acct","মাই অ্যাকাউন্ট","me"]].map(a=>`<button class="${t===a[0]?"on":""}" onclick="go('${a[0]}')">${ic(a[2])}<span>${a[1]}</span></button>`).join("");
+}
+const filt=()=>db.people.filter(p=>(p.name+p.phone).toLowerCase().includes(q.toLowerCase()));
+const srch=()=>`<div class="sr">${ic("search",20)}<input placeholder="নাম বা নাম্বার খুঁজুন" value="${esc(q)}" oninput="q=this.value;$('ls').innerHTML=list(filt())" aria-label="খুঁজুন"></div>`;
+function list(l){
+ if(!l.length)return `<div class="empty">${db.people.length?"কাউকে পাওয়া যায়নি":"এখনো কেউ নেই। নিচের “নাম্বার যোগ” থেকে প্রথম নাম্বার সেভ করুন।"}</div>`;
+ return l.map(p=>`<button class="row" onclick="go('person','${p.id}')"><div class="ic">${esc(ini(p.name))}</div><div class="gr"><b>${esc(p.name)}</b><span>${esc(p.phone)}</span></div><span class="bd">${lg(p.app,18)}${p.app==="imo"?"ইমো":"হোয়াটসঅ্যাপ"}</span></button>`).join("");
+}
+function home(){
+ return `<div class="hd"><h1>${db.me.name?"হ্যালো, "+esc(db.me.name):"আমার হিসাব"}</h1><button class="av" onclick="go('acct')" aria-label="মাই অ্যাকাউন্ট">${esc(ini(db.me.name,"আ"))}</button></div>${srch()}${upc()}<div class="ls" id="ls">${list(filt())}</div>`;
+}
+function saved(){return `<div class="hd"><h1>সেভ করা নাম্বার</h1><span class="bd">${bn(db.people.length)} জন</span></div>${srch()}<div class="ls" id="ls">${list(filt())}</div>`}
+function togH(a){const h=draft.has||(draft.has=[]),i=h.indexOf(a);i>=0?h.splice(i,1):h.push(a);document.querySelectorAll("[data-h]").forEach(b=>{const on=h.includes(b.dataset.h);b.classList.toggle("on",on);b.querySelector(".ck").textContent=on?"✓":""})}
+const NM=a=>a==="imo"?"ইমো":"হোয়াটসঅ্যাপ";
+function setApp(a){draft.app=a;document.querySelectorAll(".seg button").forEach(b=>b.classList.toggle("on",b.dataset.a===a))}
+function add(){
+ const d=draft;
+ if(step===2){
+  return `<div class="top"><button class="bk" onclick="step=1;render()" aria-label="ফিরে যান">${ic("back")}</button><h1>আমার তথ্য</h1></div>
+  <p style="margin:0 20px 14px;color:var(--mu);display:flex;align-items:center;gap:8px">${lg(d.app,22)}<span>${d.app==="imo"?"ইমো":"হোয়াটসঅ্যাপ"} • ${esc(d.name)} • ${esc(d.phone)}</span></p>
+  <div class="fl"><label for="mine">আমার নাম্বার (আমার কোন নাম্বারে এটা সেভ করছি)</label><input id="mine" type="tel" inputmode="tel" value="${esc(d.mine)}"></div>
+  <button class="sv" onclick="saveP()">সেভ করুন</button>`;
+ }
+ const ap=d.app||(d.app="whatsapp"),has=d.has||(d.has=[]);
+ return `<div class="hd"><h1>${edit?"সম্পাদনা":"নাম্বার যোগ"}</h1></div>
+ <div class="fl"><label for="n">ইউজার নাম</label><input id="n" value="${esc(d.name)}" autocomplete="off"></div>
+ <div class="fl"><label for="pw">ইউজার পাসওয়ার্ড</label><input id="pw" value="${esc(d.pw)}" autocomplete="off"></div>
+ <div class="fl"><label for="ph">ইউজার নাম্বার</label><input id="ph" type="tel" inputmode="tel" value="${esc(d.phone)}"></div>
+ <div class="fl"><label>এই নাম্বারে কী কী আছে (টিক দিন)</label><div class="seg">${["whatsapp","imo"].map(a=>`<button type="button" data-h="${a}" class="${has.includes(a)?"on":""}" onclick="togH('${a}')">${lg(a)}${NM(a)}<b class="ck">${has.includes(a)?"✓":""}</b></button>`).join("")}</div></div>
+ <div class="fl"><label>কোন অ্যাপে সেভ হবে</label><div class="seg"><button type="button" data-a="whatsapp" class="${ap==="whatsapp"?"on":""}" onclick="setApp('whatsapp')">${lg("whatsapp")}হোয়াটসঅ্যাপ</button><button type="button" data-a="imo" class="${ap==="imo"?"on":""}" onclick="setApp('imo')">${lg("imo")}ইমো</button></div></div>
+ <button class="sv" onclick="nextStep()">পরবর্তী</button>`;
+}
+function nextStep(){
+ const name=$("n").value.trim();if(!name){$("n").focus();return}
+ draft=Object.assign(draft,{name,phone:$("ph").value.trim(),pw:$("pw").value});step=2;render();scrollTo(0,0);
+}
+function saveP(){
+ draft.mine=$("mine").value.trim();
+ const d={name:draft.name,phone:draft.phone,app:draft.app,mine:draft.mine,pw:draft.pw,has:draft.has||[]};
+ let p=db.people.find(x=>x.id===edit);
+ if(p)Object.assign(p,d);else{p=Object.assign({id:uid(),tx:[]},d);db.people.unshift(p)}
+ save();cid=p.id;from="saved";v="person";show=false;edit=null;render();scrollTo(0,0);
+}
+function editP(){const p=cur();edit=p.id;draft={name:p.name,phone:p.phone,app:p.app||"whatsapp",mine:p.mine||"",pw:p.pw||"",has:(p.has||[]).slice()};step=1;v="add";render()}
+function delP(){const p=cur();if(confirm(p.name+" এবং তার সব তথ্য মুছে যাবে। নিশ্চিত?")){db.people=db.people.filter(x=>x.id!==p.id);save();go(from)}}
+function cp(b,k){navigator.clipboard&&navigator.clipboard.writeText(cur()[k]||"").then(()=>{b.textContent="কপি হয়েছে"})}
+function person(){
+ const p=cur();if(!p){v="home";return home()}
+ const d=p.phone.replace(/\D/g,"").replace(/^0/,"88");
+ const ia=pk=>`intent://send/${d}#Intent;scheme=smsto;package=${pk};action=android.intent.action.SENDTO;S.browser_fallback_url=${encodeURIComponent("https://wa.me/"+d)};end`;
+ const mi="intent:#Intent;package=com.imo.android.imoim;action=android.intent.action.MAIN;category=android.intent.category.LAUNCHER;S.browser_fallback_url="+encodeURIComponent("https://imo.im")+";end";
+ const ap=d?`<a class="apb" href="${ia("com.whatsapp")}" aria-label="হোয়াটসঅ্যাপ">${lg("whatsapp",36)}</a><a class="apb" href="${ia("com.whatsapp.w4b")}" aria-label="হোয়াটসঅ্যাপ বিজনেস">${lg("biz",36)}</a><a class="apb" href="${mi}" aria-label="ইমো">${lg("imo",36)}</a>`:"";
+ return `<div class="top"><button class="bk" onclick="go('${from}')" aria-label="ফিরে যান">${ic("back")}</button><h1>${esc(p.mine||p.name)}</h1></div>
+ <div class="pan"><div class="set">${ic("me",20)}<div class="gr"><span>নাম</span><b>${esc(p.name)}</b></div><button class="mini" onclick="cp(this,'name')">কপি</button></div>
+ <div class="set">${ic("call",20)}<div class="gr"><span>নাম্বার • ${p.app==="imo"?"ইমো":"হোয়াটসঅ্যাপ"}</span><b><a href="tel:${esc(p.phone)}">${esc(p.phone)||"নেই"}</a></b></div><div style="display:flex;gap:6px">${ap}</div></div>
+ <div class="set">${ic("key",20)}<div class="gr"><span>পাসওয়ার্ড</span><b>${p.pw?(show?esc(p.pw):"••••••"):"দেওয়া নেই"}</b></div>${p.pw?`<button class="mini" onclick="show=!show;render()">${show?"লুকান":"দেখুন"}</button><button class="mini" onclick="cp(this,'pw')">কপি</button>`:""}</div>
+ <div class="set"><div class="gr"><span>এই নাম্বারে আছে</span><div style="display:flex;gap:6px;flex-wrap:wrap;margin-top:4px">${(p.has&&p.has.length)?p.has.map(a=>`<span class="bd">${lg(a,18)}${NM(a)}</span>`).join(""):`<b>কিছু বাছাই করা নেই</b>`}</div></div></div>
+</div>
+ ${remBox(p)}<button class="sv o" onclick="editP()">তথ্য সম্পাদনা করুন</button><button class="sv d" onclick="delP()">এই মানুষটিকে মুছুন</button>`;
+}
+function acct(){
+ return `<div class="hd"><h1>মাই অ্যাকাউন্ট</h1></div><div class="big">${esc(ini(db.me.name,"আ"))}</div>
+ <div class="fl"><label for="mn">আপনার নাম</label><input id="mn" value="${esc(db.me.name)}" autocomplete="off"></div>
+ <div class="fl"><label for="mp">মোবাইল নাম্বার</label><input id="mp" type="tel" inputmode="tel" value="${esc(db.me.phone)}"></div>
+ <button class="sv" onclick="saveMe()">সেভ করুন</button>
+ <div class="sec">সেটিংস</div>
+ <div class="pan"><div class="set"><div class="gr"><b>ডার্ক থিম</b></div><button class="tg ${isDark()?"on":""}" role="switch" aria-checked="${isDark()}" aria-label="ডার্ক থিম" onclick="db.me.dark=!isDark();save();render()"><i></i></button></div>
+ <div class="set"><div class="gr"><b>পিন লক</b><span>${db.me.pin?"চালু আছে":"বন্ধ আছে"}</span></div>${db.me.pin?`<button class="mini" onclick="offPin()">বন্ধ করুন</button>`:`<input id="pn" type="password" inputmode="numeric" maxlength="4" placeholder="৪ সংখ্যা" aria-label="নতুন পিন" style="width:90px;height:40px;border:1px solid var(--ln);border-radius:10px;background:var(--sf);padding:0 10px"><button class="mini" onclick="setPin()">চালু করুন</button>`}</div></div>
+ <div class="sec">অ্যাপ</div>
+ <div class="pan"><div class="set"><div class="gr"><b>ফোনে ইনস্টল করুন</b><span id="ins">${inst?"নিচের বাটনে চাপ দিন":"ব্রাউজারের মেনু (⋮) থেকে “হোম স্ক্রিনে যোগ করুন” চাপ দিন"}</span></div>${inst?`<button class="mini" onclick="doInstall()">ইনস্টল</button>`:""}</div></div>
+ <div class="sec">ব্যাকআপ</div>
+ <div class="fl"><textarea id="ta" readonly aria-label="ব্যাকআপ">${esc(JSON.stringify(db))}</textarea><button class="mini" onclick="navigator.clipboard&&navigator.clipboard.writeText($('ta').value).then(()=>{this.textContent='কপি হয়েছে'})">ব্যাকআপ কপি করুন</button></div>
+ <div class="fl"><textarea id="rs" placeholder="ব্যাকআপের লেখা এখানে পেস্ট করুন" aria-label="রিস্টোর"></textarea><button class="mini" onclick="restore()">রিস্টোর করুন</button></div>`;
+}
+function saveMe(){db.me.name=$("mn").value.trim();db.me.phone=$("mp").value.trim();save();render()}
+function setPin(){const x=$("pn").value;if(!/^\d{4}$/.test(x)){alert("৪টি সংখ্যার পিন দিন");return}db.me.pin=hp(x);ok=true;save();render()}
+function offPin(){db.me.pin="";save();render()}
+function restore(){try{const d=JSON.parse($("rs").value);if(!Array.isArray(d.people))throw 0;if(confirm("বর্তমান সব তথ্য বদলে যাবে। নিশ্চিত?")){db=d;db.me=Object.assign({name:"",phone:"",pin:"",dark:null},db.me);save();ok=false;v="home";render()}}catch(e){alert("ব্যাকআপের লেখাটি ঠিক নেই")}}
+function lock(){
+ $("nv").hidden=true;
+ $("m").innerHTML=`<div class="lk"><div class="big">${ic("key",36)}</div><h1>পিন দিন</h1><p class="er" id="er"></p><input id="lp" type="password" inputmode="numeric" maxlength="4" aria-label="পিন" style="width:100%;height:56px;border:1px solid var(--ln);border-radius:12px;background:var(--sf)" onkeydown="if(event.key==='Enter')unlock()"><button class="sv" style="width:100%;margin:12px 0" onclick="unlock()">খুলুন</button></div>`;
+}
+function unlock(){if(hp($("lp").value)===db.me.pin){ok=true;render()}else{$("er").textContent="পিন ঠিক নেই";$("lp").value=""}}
+const fmt=t=>new Date(t).toLocaleString("bn-BD",{day:"numeric",month:"short",hour:"numeric",minute:"2-digit"});
+const pad=n=>String(n).padStart(2,"0");
+const gd=d=>d.getFullYear()+pad(d.getMonth()+1)+pad(d.getDate())+"T"+pad(d.getHours())+pad(d.getMinutes())+"00";
+function gcal(p,r){const s=new Date(r.t),e=new Date(s.getTime()+9e5);return "https://calendar.google.com/calendar/render?action=TEMPLATE&text="+encodeURIComponent("নক দিন: "+p.name)+"&dates="+gd(s)+"/"+gd(e)+"&details="+encodeURIComponent((r.note||"")+" "+(p.phone||""))}
+function remBox(p){
+ const l=(p.rem||[]).map(r=>`<div class="set"><div class="gr"><b>${fmt(r.t)}</b><span>${esc(r.note||"নক দিন")}${r.fired?" • হয়ে গেছে":""}</span></div>${r.fired?"":`<a class="mini" target="_blank" rel="noopener" href="${gcal(p,r)}">ক্যালেন্ডার</a>`}<button class="mini" onclick="delRem('${r.id}')">মুছুন</button></div>`).join("");
+ return `<div class="sec">রিমাইন্ডার</div><div class="pan">${l}<div class="set" style="flex-direction:column;align-items:stretch;gap:8px"><input class="ri" id="rt" type="datetime-local" aria-label="তারিখ ও সময়"><input class="ri" id="rn" placeholder="কী নিয়ে নক দিবেন (ঐচ্ছিক)" autocomplete="off"><button class="sv" style="margin:0;width:100%" onclick="addRem()">রিমাইন্ডার যোগ করুন</button></div></div>`;
+}
+function upc(){
+ const a=[];db.people.forEach(p=>(p.rem||[]).forEach(r=>{if(!r.fired)a.push({p,r})}));
+ a.sort((x,y)=>x.r.t<y.r.t?-1:1);if(!a.length)return"";
+ return `<div class="sec">আসন্ন রিমাইন্ডার</div><div class="ls">${a.slice(0,3).map(x=>`<button class="row" onclick="go('person','${x.p.id}')"><div class="ic">⏰</div><div class="gr"><b>${esc(x.p.name)}</b><span>${fmt(x.r.t)}${x.r.note?" • "+esc(x.r.note):""}</span></div></button>`).join("")}</div>`;
+}
+function addRem(){
+ const p=cur(),t=$("rt").value;if(!t){$("rt").focus();return}
+ if(new Date(t).getTime()<=Date.now()){alert("ভবিষ্যতের সময় দিন");return}
+ (p.rem||(p.rem=[])).push({id:uid(),t,note:$("rn").value.trim(),fired:false});
+ p.rem.sort((a,b)=>a.t<b.t?-1:1);save();askNotif();render();
+}
+function delRem(i){const p=cur();p.rem=(p.rem||[]).filter(r=>r.id!==i);save();render()}
+function askNotif(){try{if("Notification"in window&&Notification.permission==="default")Notification.requestPermission()}catch(e){}}
+let ac=null,dueQ=[];
+addEventListener("pointerdown",()=>{try{ac=ac||new(window.AudioContext||window.webkitAudioContext)();ac.resume()}catch(e){}},{once:true});
+function beep(){
+ try{ac=ac||new(window.AudioContext||window.webkitAudioContext)();if(ac.state==="suspended")ac.resume();let t=ac.currentTime;
+  for(let i=0;i<6;i++){const o=ac.createOscillator(),g=ac.createGain();o.frequency.value=i%2?660:880;o.connect(g);g.connect(ac.destination);g.gain.setValueAtTime(.0001,t);g.gain.exponentialRampToValueAtTime(.4,t+.02);g.gain.exponentialRampToValueAtTime(.0001,t+.28);o.start(t);o.stop(t+.3);t+=.35}}catch(e){}
+ try{navigator.vibrate&&navigator.vibrate([300,150,300,150,300])}catch(e){}
+}
+function showDue(){
+ let o=$("ovl");if(!o){o=document.createElement("div");o.id="ovl";o.className="ovl";document.body.appendChild(o)}
+ o.innerHTML=`<div role="alertdialog"><div class="big">⏰</div><h1 style="font-size:1.3rem">রিমাইন্ডার</h1>${dueQ.map(x=>`<p><b>${esc(x.p.name)}</b> ${esc(x.p.phone)}<br>${esc(x.r.note||"নক দিন")}</p>`).join("")}<button class="sv" style="margin:12px 0 0;width:100%" onclick="dueQ=[];$('ovl').remove();render()">ঠিক আছে</button></div>`;
+}
+function chk(){
+ if(db.me.pin&&!ok)return;
+ const n=Date.now(),f=[];
+ db.people.forEach(p=>(p.rem||[]).forEach(r=>{if(!r.fired&&new Date(r.t).getTime()<=n){r.fired=true;f.push({p,r})}}));
+ if(!f.length)return;
+ save();dueQ=dueQ.concat(f);beep();
+ f.forEach(x=>{try{if("Notification"in window&&Notification.permission==="granted"&&navigator.serviceWorker)navigator.serviceWorker.getRegistration().then(g=>g&&g.showNotification("নক দিন: "+x.p.name,{body:x.r.note||x.p.phone||"",icon:"icon-192.png",tag:x.r.id,vibrate:[300,150,300]}))}catch(e){}});
+ showDue();
+}
+setInterval(chk,10000);
+addEventListener("visibilitychange",()=>{if(!document.hidden)chk()});
+let inst=null;
+addEventListener("beforeinstallprompt",e=>{e.preventDefault();inst=e;if(v==="acct")render()});
+addEventListener("appinstalled",()=>{inst=null;if(v==="acct")render()});
+function doInstall(){if(!inst)return;inst.prompt();inst.userChoice.then(()=>{inst=null;render()})}
+if("serviceWorker"in navigator)addEventListener("load",()=>navigator.serviceWorker.register("sw.js").catch(()=>{}));
+render();chk();
+</script>
+</body>
+</html>
