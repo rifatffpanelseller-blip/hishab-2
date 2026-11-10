@@ -99,7 +99,7 @@ function list(l){
  return l.map(p=>`<button class="row" onclick="go('person','${p.id}')"><div class="ic">${esc(ini(p.name))}</div><div class="gr"><b>${esc(p.name)}</b><span>${esc(p.phone)}</span></div><span class="bd">${lg(p.app,18)}${p.app==="imo"?"ইমো":"হোয়াটসঅ্যাপ"}</span></button>`).join("");
 }
 function home(){
- return `<div class="hd"><h1>${db.me.name?"হ্যালো, "+esc(db.me.name):"আমার হিসাব"}</h1><button class="av" onclick="go('acct')" aria-label="মাই অ্যাকাউন্ট">${esc(ini(db.me.name,"আ"))}</button></div>${srch()}${upc()}<div class="ls" id="ls">${list(filt())}</div>`;
+ return `<div class="hd"><h1>${db.me.name?"হ্যালো, "+esc(db.me.name):"আমার হিসাব"}</h1><button class="av" onclick="go('acct')" aria-label="মাই অ্যাকাউন্ট">${esc(ini(db.me.name,"আ"))}</button></div>${srch()}<div class="ls" id="ls">${list(filt())}</div>`;
 }
 function saved(){return `<div class="hd"><h1>সেভ করা নাম্বার</h1><span class="bd">${bn(db.people.length)} জন</span></div>${srch()}<div class="ls" id="ls">${list(filt())}</div>`}
 function togH(a){const h=draft.has||(draft.has=[]),i=h.indexOf(a);i>=0?h.splice(i,1):h.push(a);document.querySelectorAll("[data-h]").forEach(b=>{const on=h.includes(b.dataset.h);b.classList.toggle("on",on);b.querySelector(".ck").textContent=on?"✓":""})}
@@ -194,16 +194,37 @@ function addRem(){
 }
 function delRem(i){const p=cur();p.rem=(p.rem||[]).filter(r=>r.id!==i);save();render()}
 function askNotif(){try{if("Notification"in window&&Notification.permission==="default")Notification.requestPermission()}catch(e){}}
-let ac=null,dueQ=[];
+let ac=null,dueQ=[],mg=null,vi=null;
 addEventListener("pointerdown",()=>{try{ac=ac||new(window.AudioContext||window.webkitAudioContext)();ac.resume()}catch(e){}},{once:true});
-function beep(){
- try{ac=ac||new(window.AudioContext||window.webkitAudioContext)();if(ac.state==="suspended")ac.resume();let t=ac.currentTime;
-  for(let i=0;i<6;i++){const o=ac.createOscillator(),g=ac.createGain();o.frequency.value=i%2?660:880;o.connect(g);g.connect(ac.destination);g.gain.setValueAtTime(.0001,t);g.gain.exponentialRampToValueAtTime(.4,t+.02);g.gain.exponentialRampToValueAtTime(.0001,t+.28);o.start(t);o.stop(t+.3);t+=.35}}catch(e){}
- try{navigator.vibrate&&navigator.vibrate([300,150,300,150,300])}catch(e){}
+function beep(){stopAlarm();
+ try{ac=ac||new(window.AudioContext||window.webkitAudioContext)();if(ac.state==="suspended")ac.resume();
+  const m=[523.25,659.25,783.99,1046.5,783.99,659.25,523.25,783.99,1046.5,1318.5];let t=ac.currentTime+.05;const end=t+60;mg=ac.createGain();mg.connect(ac.destination);
+  while(t<end){
+   m.forEach(f=>{if(t>=end)return;[[1,.35],[2,.12],[3,.05]].forEach(([k,a])=>{const o=ac.createOscillator(),g=ac.createGain();o.type="sine";o.frequency.value=f*k;o.connect(g);g.connect(mg);g.gain.setValueAtTime(.0001,t);g.gain.exponentialRampToValueAtTime(a,t+.02);g.gain.exponentialRampToValueAtTime(.0001,t+1.1);o.start(t);o.stop(t+1.15)});t+=.3});
+   t+=.6}
+ }catch(e){}
+ try{if(navigator.vibrate){let n=0;const f=()=>{navigator.vibrate([600,400,600,400,600,400,600,400,600]);if(++n>=12){clearInterval(vi);vi=null}};f();vi=setInterval(f,5000)}}catch(e){}
+}
+function stopAlarm(){
+ try{clearInterval(vi);vi=null;navigator.vibrate&&navigator.vibrate(0)}catch(e){}
+ try{mg&&mg.disconnect();mg=null}catch(e){}
+}
+function appLinks(p){
+ const d=(p.phone||"").replace(/\D/g,"").replace(/^0/,"88");
+ if(!d)return `<p style="color:var(--mu)">নাম্বার দেওয়া নেই</p>`;
+ const ia=pk=>`intent://send/${d}#Intent;scheme=smsto;package=${pk};action=android.intent.action.SENDTO;S.browser_fallback_url=${encodeURIComponent("https://wa.me/"+d)};end`;
+ const mi="intent:#Intent;package=com.imo.android.imoim;action=android.intent.action.MAIN;category=android.intent.category.LAUNCHER;S.browser_fallback_url="+encodeURIComponent("https://imo.im")+";end";
+ const b=(h,l,t)=>`<a class="sv o" href="${h}" style="margin:8px 0;width:100%;display:flex;align-items:center;justify-content:center;gap:10px;text-decoration:none">${lg(l,26)}${t}</a>`;
+ return b(ia("com.whatsapp"),"whatsapp","হোয়াটসঅ্যাপ ওপেন")+b(ia("com.whatsapp.w4b"),"biz","হোয়াটসঅ্যাপ বিজনেস ওপেন")+b(mi,"imo","ইমো ওপেন");
+}
+function dueOk(){
+ stopAlarm();
+ const o=$("ovl");if(!o)return;
+ o.innerHTML=`<div role="dialog"><h1 style="font-size:1.3rem">কোনটা দিয়ে খুলবেন?</h1>${dueQ.map(x=>`<div style="margin:12px 0"><p><b>${esc(x.p.name)}</b> ${esc(x.p.phone)}</p>${appLinks(x.p)}</div>`).join("")}<button class="sv o" style="margin:12px 0 0;width:100%" onclick="dueQ=[];$('ovl').remove();render()">বন্ধ করুন</button></div>`;
 }
 function showDue(){
  let o=$("ovl");if(!o){o=document.createElement("div");o.id="ovl";o.className="ovl";document.body.appendChild(o)}
- o.innerHTML=`<div role="alertdialog"><div class="big">⏰</div><h1 style="font-size:1.3rem">রিমাইন্ডার</h1>${dueQ.map(x=>`<p><b>${esc(x.p.name)}</b> ${esc(x.p.phone)}<br>${esc(x.r.note||"নক দিন")}</p>`).join("")}<button class="sv" style="margin:12px 0 0;width:100%" onclick="dueQ=[];$('ovl').remove();render()">ঠিক আছে</button></div>`;
+ o.innerHTML=`<div role="alertdialog"><div class="big">⏰</div><h1 style="font-size:1.3rem">রিমাইন্ডার</h1>${dueQ.map(x=>`<p><b>${esc(x.p.name)}</b> ${esc(x.p.phone)}<br>${esc(x.r.note||"নক দিন")}</p>`).join("")}<button class="sv" style="margin:12px 0 0;width:100%" onclick="dueOk()">ঠিক আছে</button></div>`;
 }
 function chk(){
  if(db.me.pin&&!ok)return;
@@ -211,7 +232,7 @@ function chk(){
  db.people.forEach(p=>(p.rem||[]).forEach(r=>{if(!r.fired&&new Date(r.t).getTime()<=n){r.fired=true;f.push({p,r})}}));
  if(!f.length)return;
  save();dueQ=dueQ.concat(f);beep();
- f.forEach(x=>{try{if("Notification"in window&&Notification.permission==="granted"&&navigator.serviceWorker)navigator.serviceWorker.getRegistration().then(g=>g&&g.showNotification("নক দিন: "+x.p.name,{body:x.r.note||x.p.phone||"",icon:"icon-192.png",tag:x.r.id,vibrate:[300,150,300]}))}catch(e){}});
+ f.forEach(x=>{try{if("Notification"in window&&Notification.permission==="granted"&&navigator.serviceWorker)navigator.serviceWorker.getRegistration().then(g=>g&&g.showNotification("নক দিন: "+x.p.name,{body:x.r.note||x.p.phone||"",icon:"icon-192.png",tag:x.r.id,vibrate:[600,200,600,200,600,200,600,200,600]}))}catch(e){}});
  showDue();
 }
 setInterval(chk,10000);
