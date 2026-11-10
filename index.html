@@ -138,10 +138,10 @@ function delP(){const p=cur();if(confirm(p.name+" এবং তার সব ত
 function cp(b,k){navigator.clipboard&&navigator.clipboard.writeText(cur()[k]||"").then(()=>{b.textContent="কপি হয়েছে"})}
 function person(){
  const p=cur();if(!p){v="home";return home()}
- const d=p.phone.replace(/\D/g,"").replace(/^0/,"88");
+ const d=p.phone.replace(/\D/g,"").replace(/^0/,"880");
  const ia=pk=>`intent://send?phone=${d}#Intent;scheme=whatsapp;package=${pk};S.browser_fallback_url=${encodeURIComponent("https://wa.me/"+d)};end`;
  const mi="intent:#Intent;package=com.imo.android.imoim;action=android.intent.action.MAIN;category=android.intent.category.LAUNCHER;S.browser_fallback_url="+encodeURIComponent("https://imo.im")+";end";
- const ap=d?`<a class="apb" href="${ia("com.whatsapp")}" aria-label="হোয়াটসঅ্যাপ">${lg("whatsapp",36)}</a><a class="apb" href="${ia("com.whatsapp.w4b")}" aria-label="হোয়াটসঅ্যাপ বিজনেস">${lg("biz",36)}</a><a class="apb" href="${mi}" aria-label="ইমো">${lg("imo",36)}</a>`:"";
+ const ap=d?`<a class="apb" href="${ia("com.whatsapp")}" onclick="return op('com.whatsapp','whatsapp://send?phone=${d}')" aria-label="হোয়াটসঅ্যাপ">${lg("whatsapp",36)}</a><a class="apb" href="${ia("com.whatsapp.w4b")}" onclick="return op('com.whatsapp.w4b','whatsapp://send?phone=${d}')" aria-label="হোয়াটসঅ্যাপ বিজনেস">${lg("biz",36)}</a><a class="apb" href="${mi}" onclick="return op('com.imo.android.imoim','')" aria-label="ইমো">${lg("imo",36)}</a>`:"";
  return `<div class="top"><button class="bk" onclick="go('${from}')" aria-label="ফিরে যান">${ic("back")}</button><h1>${esc(p.mine||p.name)}</h1></div>
  <div class="pan"><div class="set">${ic("me",20)}<div class="gr"><span>নাম</span><b>${esc(p.name)}</b></div><button class="mini" onclick="cp(this,'name')">কপি</button></div>
  <div class="set">${ic("call",20)}<div class="gr"><span>নাম্বার • ${p.app==="imo"?"ইমো":"হোয়াটসঅ্যাপ"}</span><b><a href="tel:${esc(p.phone)}">${esc(p.phone)||"নেই"}</a></b></div><div style="display:flex;gap:6px">${ap}</div></div>
@@ -209,13 +209,14 @@ function stopAlarm(){
  try{clearInterval(vi);vi=null;navigator.vibrate&&navigator.vibrate(0)}catch(e){}
  try{mg&&mg.disconnect();mg=null}catch(e){}
 }
+function op(pk,u){try{if(window.AndroidApp&&AndroidApp.open(pk,u||""))return false}catch(e){}return true}
 function appLinks(p){
- const d=(p.phone||"").replace(/\D/g,"").replace(/^0/,"88");
+ const d=(p.phone||"").replace(/\D/g,"").replace(/^0/,"880");
  if(!d)return `<p style="color:var(--mu)">নাম্বার দেওয়া নেই</p>`;
  const ia=pk=>`intent://send?phone=${d}#Intent;scheme=whatsapp;package=${pk};S.browser_fallback_url=${encodeURIComponent("https://wa.me/"+d)};end`;
  const mi="intent:#Intent;package=com.imo.android.imoim;action=android.intent.action.MAIN;category=android.intent.category.LAUNCHER;S.browser_fallback_url="+encodeURIComponent("https://imo.im")+";end";
- const b=(h,l,t)=>`<a class="sv o" href="${h}" style="margin:8px 0;width:100%;display:flex;align-items:center;justify-content:center;gap:10px;text-decoration:none">${lg(l,26)}${t}</a>`;
- return b(ia("com.whatsapp"),"whatsapp","হোয়াটসঅ্যাপ ওপেন")+b(ia("com.whatsapp.w4b"),"biz","হোয়াটসঅ্যাপ বিজনেস ওপেন")+b(mi,"imo","ইমো ওপেন");
+ const b=(h,l,t,o)=>`<a class="sv o" href="${h}" onclick="${o}" style="margin:8px 0;width:100%;display:flex;align-items:center;justify-content:center;gap:10px;text-decoration:none">${lg(l,26)}${t}</a>`;
+ return b(ia("com.whatsapp"),"whatsapp","হোয়াটসঅ্যাপ ওপেন",`return op('com.whatsapp','whatsapp://send?phone=${d}')`)+b(ia("com.whatsapp.w4b"),"biz","হোয়াটসঅ্যাপ বিজনেস ওপেন",`return op('com.whatsapp.w4b','whatsapp://send?phone=${d}')`)+b(mi,"imo","ইমো ওপেন",`return op('com.imo.android.imoim','')`);
 }
 function dueOk(){
  stopAlarm();
