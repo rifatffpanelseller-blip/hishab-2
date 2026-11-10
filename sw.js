@@ -11,3 +11,4 @@ self.addEventListener("fetch",e=>{
   return n}).catch(()=>caches.match(e.request).then(r=>r||caches.match("index.html"))));
 });
 self.addEventListener("notificationclick",e=>{e.notification.close();e.waitUntil(clients.matchAll({type:"window"}).then(l=>l.length?l[0].focus():clients.openWindow("./")))});
+ 
