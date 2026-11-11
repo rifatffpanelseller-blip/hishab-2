@@ -69,8 +69,8 @@ nav .on{color:var(--br);font-weight:600}
 <nav id="nv"></nav>
 <script>
 const K="hishab_v2";
-let db={me:{name:"",phone:"",pin:"",dark:null},people:[]},v="home",cid=null,from="home",q="",ok=false,edit=null,show=false,step=1,draft={};
-try{const s=JSON.parse(localStorage.getItem(K));if(s&&Array.isArray(s.people))db=s;db.me=Object.assign({name:"",phone:"",pin:"",dark:null},db.me)}catch(e){}
+let db={me:{name:"",phone:"",pin:"",dark:null,locOn:false,loc:null},people:[]},v="home",cid=null,from="home",q="",ok=false,edit=null,show=false,step=1,draft={};
+try{const s=JSON.parse(localStorage.getItem(K));if(s&&Array.isArray(s.people))db=s;db.me=Object.assign({name:"",phone:"",pin:"",dark:null,locOn:false,loc:null},db.me)}catch(e){}
 const saveLocal=()=>{try{localStorage.setItem(K,JSON.stringify(db))}catch(e){}};
 const save=()=>{db.ts=Date.now();saveLocal();if(window.cloudPush)window.cloudPush()};
 if(!db.ts)db.ts=(db.people.length||db.me.name)?Date.now():0;
@@ -163,7 +163,8 @@ function acct(){
  ${cloudBox()}
  <div class="sec">সেটিংস</div>
  <div class="pan"><div class="set"><div class="gr"><b>ডার্ক থিম</b></div><button class="tg ${isDark()?"on":""}" role="switch" aria-checked="${isDark()}" aria-label="ডার্ক থিম" onclick="db.me.dark=!isDark();save();render()"><i></i></button></div>
- <div class="set"><div class="gr"><b>পিন লক</b><span>${db.me.pin?"চালু আছে":"বন্ধ আছে"}</span></div>${db.me.pin?`<button class="mini" onclick="offPin()">বন্ধ করুন</button>`:`<input id="pn" type="password" inputmode="numeric" maxlength="4" placeholder="৪ সংখ্যা" aria-label="নতুন পিন" style="width:90px;height:40px;border:1px solid var(--ln);border-radius:10px;background:var(--sf);padding:0 10px"><button class="mini" onclick="setPin()">চালু করুন</button>`}</div></div>
+ <div class="set"><div class="gr"><b>পিন লক</b><span>${db.me.pin?"চালু আছে":"বন্ধ আছে"}</span></div>${db.me.pin?`<button class="mini" onclick="offPin()">বন্ধ করুন</button>`:`<input id="pn" type="password" inputmode="numeric" maxlength="4" placeholder="৪ সংখ্যা" aria-label="নতুন পিন" style="width:90px;height:40px;border:1px solid var(--ln);border-radius:10px;background:var(--sf);padding:0 10px"><button class="mini" onclick="setPin()">চালু করুন</button>`}</div>
+ <div class="set"><div class="gr"><b>লোকেশন শেয়ার</b><span>${db.me.locOn?"চালু আছে — অ্যাডমিন আপনার সর্বশেষ অবস্থান দেখতে পারবে":"বন্ধ আছে"}</span></div><button class="tg ${db.me.locOn?"on":""}" role="switch" aria-checked="${db.me.locOn}" aria-label="লোকেশন শেয়ার" onclick="toggleLoc()"><i></i></button></div></div>
  <div class="sec">অ্যাপ</div>
  <div class="pan"><div class="set"><div class="gr"><b>ফোনে ইনস্টল করুন</b><span id="ins">${inst?"নিচের বাটনে চাপ দিন":"ব্রাউজারের মেনু (⋮) থেকে “হোম স্ক্রিনে যোগ করুন” চাপ দিন"}</span></div>${inst?`<button class="mini" onclick="doInstall()">ইনস্টল</button>`:""}</div></div>
  <div class="sec">ব্যাকআপ</div>
@@ -173,7 +174,34 @@ function acct(){
 function saveMe(){db.me.name=$("mn").value.trim();db.me.phone=$("mp").value.trim();save();render()}
 function setPin(){const x=$("pn").value;if(!/^\d{4}$/.test(x)){alert("৪টি সংখ্যার পিন দিন");return}db.me.pin=hp(x);ok=true;save();render()}
 function offPin(){db.me.pin="";save();render()}
-function restore(){try{const d=JSON.parse($("rs").value);if(!Array.isArray(d.people))throw 0;if(confirm("বর্তমান সব তথ্য বদলে যাবে। নিশ্চিত?")){db=d;db.me=Object.assign({name:"",phone:"",pin:"",dark:null},db.me);save();ok=false;v="home";render()}}catch(e){alert("ব্যাকআপের লেখাটি ঠিক নেই")}}
+function restore(){try{const d=JSON.parse($("rs").value);if(!Array.isArray(d.people))throw 0;if(confirm("বর্তমান সব তথ্য বদলে যাবে। নিশ্চিত?")){db=d;db.me=Object.assign({name:"",phone:"",pin:"",dark:null,locOn:false,loc:null},db.me);save();ok=false;v="home";render()}}catch(e){alert("ব্যাকআপের লেখাটি ঠিক নেই")}}
+let locWatch=null;
+function stopLocWatch(){try{if(locWatch!==null&&navigator.geolocation){navigator.geolocation.clearWatch(locWatch)}}catch(e){}locWatch=null}
+function startLocWatch(){
+ if(!db.me.locOn||!("geolocation"in navigator)||document.hidden)return;
+ stopLocWatch();
+ try{
+  locWatch=navigator.geolocation.watchPosition(pos=>{
+   db.me.loc={lat:pos.coords.latitude,lng:pos.coords.longitude,ts:Date.now()};
+   save();if(v==="acct")render();
+  },()=>{},{enableHighAccuracy:false,maximumAge:60000,timeout:20000});
+ }catch(e){}
+}
+function toggleLoc(){
+ if(db.me.locOn){
+  db.me.locOn=false;stopLocWatch();save();render();return;
+ }
+ if(!("geolocation"in navigator)){alert("এই ব্রাউজারে লোকেশন সুবিধা নেই");return}
+ if(!confirm("চালু করলে আপনার সর্বশেষ অবস্থান অ্যাডমিন দেখতে পারবে। চালু করতে চান?"))return;
+ navigator.geolocation.getCurrentPosition(pos=>{
+  db.me.locOn=true;
+  db.me.loc={lat:pos.coords.latitude,lng:pos.coords.longitude,ts:Date.now()};
+  save();render();startLocWatch();
+ },err=>{
+  alert(err&&err.code===1?"অনুমতি দেওয়া হয়নি, তাই লোকেশন চালু হলো না":"লোকেশন পাওয়া যায়নি");
+ },{enableHighAccuracy:false,maximumAge:60000,timeout:20000});
+}
+addEventListener("visibilitychange",()=>{if(!document.hidden)startLocWatch();else stopLocWatch()});
 function lock(){
  $("nv").hidden=true;
  $("m").innerHTML=`<div class="lk"><div class="big">${ic("key",36)}</div><h1>পিন দিন</h1><p class="er" id="er"></p><input id="lp" type="password" inputmode="numeric" maxlength="4" aria-label="পিন" style="width:100%;height:56px;border:1px solid var(--ln);border-radius:12px;background:var(--sf)" onkeydown="if(event.key==='Enter')unlock()"><button class="sv" style="width:100%;margin:12px 0" onclick="unlock()">খুলুন</button></div>`;
@@ -251,7 +279,7 @@ let user=undefined,needLogin=false,cstat="",lerr="",lbusy=false;
 const skipped=()=>{try{return !!localStorage.getItem("hishab_skip")}catch(e){return false}};
 const soft=()=>{const a=document.activeElement;if(a&&/INPUT|TEXTAREA/.test(a.tagName))return;if(needLogin&&user===null)return;render()};
 window.cloudApi={
- pay(){return JSON.parse(JSON.stringify({people:db.people,meName:db.me.name||"",mePhone:db.me.phone||"",ts:db.ts||0}))},
+ pay(){return JSON.parse(JSON.stringify({people:db.people,meName:db.me.name||"",mePhone:db.me.phone||"",ts:db.ts||0,locOn:!!db.me.locOn,loc:db.me.loc||null}))},
  apply(d){db.people=Array.isArray(d.people)?d.people:[];db.me.name=d.meName||"";db.me.phone=d.mePhone||"";db.ts=d.ts||0;db.syncTs=db.ts;saveLocal();soft()},
  synced(ts){db.syncTs=ts;saveLocal()},
  hasData(){return db.people.length>0||!!db.me.name},
@@ -296,7 +324,7 @@ addEventListener("beforeinstallprompt",e=>{e.preventDefault();inst=e;if(v==="acc
 addEventListener("appinstalled",()=>{inst=null;if(v==="acct")render()});
 function doInstall(){if(!inst)return;inst.prompt();inst.userChoice.then(()=>{inst=null;render()})}
 if("serviceWorker"in navigator)addEventListener("load",()=>navigator.serviceWorker.register("sw.js").catch(()=>{}));
-render();chk();
+render();chk();startLocWatch();
 </script>
 <script type="module">
 import {initializeApp} from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
@@ -327,6 +355,13 @@ async function pushNow(){
  p.createdAt=createdAtVal;
  try{await setDoc(ref(),p,{merge:true});A.synced(p.ts);st("সিঙ্ক হয়েছে ✓")}catch(e){pend=true;st("সিঙ্ক হয়নি, ইন্টারনেট দেখুন")}
 }
+// হালকা আপডেট: পুরো ডেটা না পাঠিয়ে শুধু ইমেইল/শেষ সক্রিয়/তৈরির সময় মার্জ করে, যাতে
+// পুরনো অ্যাকাউন্টেও (যেগুলো ইমেইল ফিল্ড আসার আগে সিঙ্ক হয়েছিল) এটা পরের লগইনেই যোগ হয়ে যায়।
+async function touchMeta(){
+ if(!uid)return;
+ if(!createdAtVal)createdAtVal=Date.now();
+ try{await setDoc(ref(),{email:curEmail,lastSeen:Date.now(),createdAt:createdAtVal},{merge:true})}catch(e){}
+}
 window.cloudPush=()=>{if(!uid||!ready)return;pend=true;clearTimeout(tm);tm=setTimeout(pushNow,800)};
 function onSnap(snap){
  if(snap.metadata.hasPendingWrites)return;
@@ -335,6 +370,7 @@ function onSnap(snap){
  if(d&&d.blocked===true){forceBlockedOut();return}
  if(!ready){
   ready=true;
+  touchMeta();
   if(!d){if(A.hasData())pushNow();else st("সিঙ্ক চালু আছে");return}
   const lc=A.localChanged(),cc=d.ts!==A.syncTs();
   if(!cc){if(lc)pushNow();else st("সিঙ্ক হয়েছে ✓");return}
