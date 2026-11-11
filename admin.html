@@ -120,6 +120,7 @@ function listView(){
     <span class="mu">${(u.people||[]).length} জন সেভ করা • শেষ সক্রিয় ${fmt(u.lastSeen||u.ts)}</span>
    </div>
    ${u.blocked?'<span class="bd block">ব্লকড</span>':""}
+   ${u.locOn?'<span class="bd">📍 লোকেশন</span>':""}
   </button>`).join("")||`<p class="mu" style="text-align:center;margin-top:40px">কোনো ইউজার পাওয়া যায়নি।</p>`;
  $("m").innerHTML=`<div class="hd">
    <div><h1>ইউজার তালিকা</h1><p class="mu" style="margin:2px 0 0">মোট ${users.length} জন</p></div>
@@ -132,6 +133,7 @@ function listView(){
 }
 
 window.openUser=uid=>{selUid=uid;render()};
+window.toggleLocCard=()=>{const c=$("locCard");if(c)c.style.display=c.style.display==="none"?"block":"none"};
 
 function detailView(){
  const u=users.find(x=>x.uid===selUid);
@@ -162,7 +164,15 @@ function detailView(){
  <div class="card" style="display:flex;gap:8px;flex-wrap:wrap">
   <button class="btn ${u.blocked?"p":""}" onclick="toggleBlock('${u.uid}',${!u.blocked})">${u.blocked?"আনব্লক করুন":"ব্লক করুন"}</button>
   <button class="btn" onclick="sendReset('${esc(u.email||"")}')">পাসওয়ার্ড রিসেট ইমেইল পাঠান</button>
+  <button class="btn" onclick="toggleLocCard()">লোকেশন দেখুন</button>
   <button class="btn d" onclick="delUser('${u.uid}')">ডেটা ডিলিট করুন</button>
+ </div>
+ <div class="card" id="locCard" style="display:none">
+  ${u.locOn&&u.loc?`
+   <div class="row"><span class="mu">সর্বশেষ অবস্থান পাওয়া গেছে</span><b>${fmt(u.loc.ts)}</b></div>
+   <div class="row"><span class="mu">স্থানাঙ্ক</span><b>${u.loc.lat.toFixed(5)}, ${u.loc.lng.toFixed(5)}</b></div>
+   <a class="btn p" style="display:inline-block;margin-top:8px;text-decoration:none" target="_blank" rel="noopener" href="https://www.google.com/maps?q=${u.loc.lat},${u.loc.lng}">ম্যাপে দেখুন</a>
+  `:`<p class="mu" style="margin:0">এই ইউজার লোকেশন শেয়ার চালু করেননি, তাই অবস্থান দেখা যাচ্ছে না।</p>`}
  </div>
  <div class="note">নোট: "ডেটা ডিলিট" শুধু এই ইউজারের সেভ করা নাম্বার ও তথ্য মুছে দেবে। তার লগইন অ্যাকাউন্টটি (ইমেইল/পাসওয়ার্ড) মুছতে হলে Firebase Console → Authentication থেকে আলাদাভাবে মুছতে হবে, কারণ সেটা এখান থেকে করা যায় না।</div>
  <div class="sec" style="font-weight:600;margin:10px 0 6px">সেভ করা নাম্বারসমূহ</div>
